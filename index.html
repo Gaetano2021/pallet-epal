@@ -404,6 +404,7 @@ const UTENTI_AUTORIZZATI = [
   'cristian.tarateta@speedtrasporti.com',
 ];
 const ONEDRIVE_FILE = 'PalletEPAL/pallet_data.json';
+const SHARED_DRIVE_ID = 'b!6kddZjcySki5YHLR2W1wtEdfoHph-PxNolCgrDhI5iA5KaQgNobWSpsPdSu72U41';
 window.msalInstance = null;
 
 // msalInstance viene creato in initApp() per evitare problemi di inizializzazione
@@ -512,7 +513,7 @@ async function caricaDaOneDrive(showLoad=false){
   setSyncStatus('sync','Sincronizzazione...');
   try{
     const token=await getToken();
-    const url=`${GRAPH}/me/drive/root:/${ONEDRIVE_FILE}:/content`;
+    const url=`${GRAPH}/drives/${SHARED_DRIVE_ID}/root:/${ONEDRIVE_FILE}:/content`;
     const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});
     if(r.status===404){
       // file non esiste ancora, primo avvio
@@ -538,11 +539,11 @@ async function salvaSuOneDrive(){
   try{
     const token=await getToken();
     // Crea cartella PalletEPAL se non esiste (PUT è idempotente)
-    await fetch(`${GRAPH}/me/drive/root:/PalletEPAL:/children`,{
+    await fetch(`${GRAPH}/drives/${SHARED_DRIVE_ID}/root:/PalletEPAL:/children`,{
       method:'GET', headers:{Authorization:'Bearer '+token}
     }).catch(()=>{});
     // Salva file
-    const url=`${GRAPH}/me/drive/root:/${ONEDRIVE_FILE}:/content`;
+    const url=`${GRAPH}/drives/${SHARED_DRIVE_ID}/root:/${ONEDRIVE_FILE}:/content`;
     db.updated_at=new Date().toISOString();
     db.updated_by=currentUser?.name||'';
     const r=await fetch(url,{
