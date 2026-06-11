@@ -397,6 +397,9 @@ const MSAL_CONFIG = {
   cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: true }
 };
 const SCOPES = ['Files.ReadWrite', 'User.Read'];
+const UTENTI_AUTORIZZATI = [
+  'salvatore@speedtrasporti.com',
+];
 const ONEDRIVE_FILE = 'PalletEPAL/pallet_data.json';
 window.msalInstance = null;
 
@@ -444,6 +447,18 @@ async function login(){
 
 async function doPostLogin(account){
   currentUser = account;
+  // Controlla se l'utente è autorizzato
+  const emailUtente = (account.username || '').toLowerCase().trim();
+  const autorizzato = UTENTI_AUTORIZZATI.map(e=>e.toLowerCase()).includes(emailUtente);
+  if(!autorizzato){
+    await msalInstance.logoutPopup().catch(()=>{});
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+    const el=document.getElementById('login-err');
+    el.style.display='block';
+    el.textContent='Accesso negato. Il tuo account ('+emailUtente+') non è autorizzato a usare questa applicazione.';
+    return;
+  }
   // ottieni token
   try{
     const r = await window.msalInstance.acquireTokenSilent({ scopes: SCOPES, account });
